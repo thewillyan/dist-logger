@@ -1,6 +1,6 @@
 #!/bin/bash
 
-LXC_PROJECT_NAME="dist-logger"
+source env.sh
 
 # Delete all node containers
 for i in {0..9}
