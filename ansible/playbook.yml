@@ -1,0 +1,7 @@
+- name: Setup nodes
+  hosts: all
+  tasks:
+    - name: Copy topogy to the nodes
+      ansible.builtin.copy:
+        src: "topologies/{{ topology }}.json"
+        dest: "/root/topology.json"
