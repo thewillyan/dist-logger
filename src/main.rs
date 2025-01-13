@@ -3,8 +3,15 @@ use greet::{
     greeter_server::{Greeter, GreeterServer},
     GreetRequest, GreetResponse,
 };
-use std::{collections::HashMap, env};
-use tokio::{fs::File, task::JoinSet};
+use std::{
+    collections::HashMap,
+    env,
+    sync::{
+        atomic::{AtomicUsize, Ordering},
+        Arc,
+    },
+};
+use tokio::{sync::broadcast, task::JoinSet};
 use tonic::{transport::Server, Request, Response, Status};
 
 use crate::log::Logger;
@@ -15,7 +22,10 @@ mod greet {
     tonic::include_proto!("greet");
 }
 
-struct GreeterService;
+struct GreeterService {
+    service_budget: Arc<AtomicUsize>,
+    shutdown_signal: broadcast::Sender<()>,
+}
 
 #[tonic::async_trait]
 impl Greeter for GreeterService {
@@ -29,6 +39,12 @@ impl Greeter for GreeterService {
             text,
         };
 
+        self.service_budget.fetch_sub(1, Ordering::AcqRel);
+
+        if self.service_budget.load(Ordering::Relaxed) == 0 {
+            self.shutdown_signal.send(()).unwrap();
+        }
+
         Ok(Response::new(reply))
     }
 }
@@ -39,7 +55,7 @@ const GRPC_PORT: u32 = 50051;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let hostname = env::var("HOSTNAME")?;
-    let log_file = File::create(format!("{PREFIX_PATH}/{hostname}.log")).await?;
+    let log_file = tokio::fs::File::create(format!("{PREFIX_PATH}/{hostname}.log")).await?;
     let mut logger = Logger::new(log_file);
 
     logger.log(&format!("{hostname} started running.")).await?;
@@ -55,12 +71,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await?;
 
     // setup server
+    let (tx, mut rx) = broadcast::channel(1);
+    let greeter_service = GreeterService {
+        service_budget: Arc::new(neighbors.len().into()),
+        shutdown_signal: tx,
+    };
+
+    let server = Server::builder().add_service(GreeterServer::new(greeter_service));
     let addr = format!("[::1]:{GRPC_PORT}").parse()?;
-    let server = Server::builder().add_service(GreeterServer::new(GreeterService));
 
     tokio::spawn(async move {
         server
-            .serve(addr)
+            .serve_with_shutdown(addr, async { rx.recv().await.unwrap() })
             .await
             .expect("Failed to start gRPC server.");
     });
