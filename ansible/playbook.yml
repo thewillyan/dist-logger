@@ -1,7 +1,23 @@
 - name: Setup nodes
   hosts: all
   tasks:
-    - name: Copy topogy to the nodes
+    - name: Copy topogy
       ansible.builtin.copy:
         src: "topologies/{{ topology }}.json"
         dest: "/root/topology.json"
+
+    - name: Ensure remote code directory exists
+      ansible.builtin.file: 
+        path: "/root/dist-logger/"
+        state: directory
+
+    - name: Copy the source code
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "/root/dist-logger/"
+      loop:
+        - ../Cargo.lock
+        - ../Cargo.toml
+        - ../build.rs
+        - ../src
+        - ../proto
