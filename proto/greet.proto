@@ -3,6 +3,13 @@ package greet;
 
 service Greeter { rpc Greet(GreetRequest) returns (GreetResponse); }
 
-message GreetRequest { string name = 1; }
+message GreetRequest {
+  string src = 1;
+  string dst = 2;
+}
 
-message GreetResponse { string text = 1; }
+message GreetResponse {
+  string src = 1;
+  string dst = 2;
+  string text = 3;
+}
