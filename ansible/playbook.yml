@@ -1,6 +1,15 @@
 - name: Setup nodes
   hosts: all
   tasks:
+    - name: Update repositories 
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Install dependencies
+      ansible.builtin.apt:
+        package: protobuf-compiler
+        state: present
+
     - name: Copy topogy
       ansible.builtin.copy:
         src: "topologies/{{ topology }}.json"
