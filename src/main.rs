@@ -82,6 +82,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         client_map.insert(n, client);
     }
 
-    // TODO: send greeting requests
+    // Send greeting requests
+    let mut requests = JoinSet::new();
+    for (n, mut client) in client_map.clone().into_iter() {
+        let src = hostname.clone();
+        requests.spawn(async move {
+            let request = Request::new(GreetRequest {
+                src,
+                dst: n.to_owned(),
+            });
+            client.greet(request).await
+        });
+    }
+
+    for reply in requests.join_all().await {
+        let reply = reply?.into_inner();
+        let text = format!("{} said: '{}'", reply.src, reply.text);
+        logger.log(&text).await?;
+    }
+
     Ok(())
 }
