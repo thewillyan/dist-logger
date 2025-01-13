@@ -8,7 +8,8 @@ then
     echo "Creating" $LXC_PROJECT_NAME "project" 
     lxc project create $LXC_PROJECT_NAME
     lxc profile device add default root disk path=/ pool=default --project $LXC_PROJECT_NAME
-    lxc profile device add default eth0 nic name=eth0 nictype=p2p --project $LXC_PROJECT_NAME
+    lxc network create lxdbr-dl --project $LXC_PROJECT_NAME
+    lxc profile device add default eth0 nic name=eth0 nictype=bridged parent=lxdbr-dl --project $LXC_PROJECT_NAME
 fi
 
 # create node containers

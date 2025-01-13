@@ -20,3 +20,6 @@ done
 # Delete project
 echo "Deleting project $LXC_PROJECT_NAME"
 lxc project delete $LXC_PROJECT_NAME
+
+# Delete network
+lxc network delete lxdbr-dl
