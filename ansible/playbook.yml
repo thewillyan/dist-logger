@@ -1,59 +1,16 @@
 - name: Setup nodes
   hosts: all
   tasks:
-    - name: Install dependencies
-      ansible.builtin.apt:
-        update_cache: yes
-        name: 
-          - protobuf-compiler
-          - clang
-        state: present
-
-    - name: Install rust compiler if not installed
-      environment:
-        PATH: "{{ ansible_env.PATH }}:{{ ansible_env.HOME }}/.cargo/bin"
-      block:
-        - name: Check if cargo is installed
-          ansible.builtin.command:
-            cmd: command -v cargo
-          register: cargo_exists
-          ignore_errors: yes
-
-        - name: Download rust installer
-          when: cargo_exists.failed
-          ansible.builtin.get_url:
-            url: https://sh.rustup.rs
-            dest: /tmp/sh.rustup.sh
-            mode: '0755'
-
-        - name: Execute rust installer
-          when: cargo_exists.failed
-          ansible.builtin.shell: /tmp/sh.rustup.sh -y
-
-    - name: Generate executable
-      environment:
-        PATH: "{{ ansible_env.PATH }}:{{ ansible_env.HOME }}/.cargo/bin"
-      block:
-        - name: Ensure remote code directory exists
-          ansible.builtin.file:
-            path: "/root/dist-logger/"
-            state: directory
-
-        - name: Copy the source code
-          ansible.builtin.copy:
-            src: "{{ item }}"
-            dest: "/root/dist-logger/"
-          loop:
-            - ../Cargo.lock
-            - ../Cargo.toml
-            - ../build.rs
-            - ../src
-            - ../proto
-
-        - name: Compile the source code
-          ansible.builtin.shell: cargo build --release --manifest-path /root/dist-logger/Cargo.toml
+    - name: Send dist-logger executable to nodes
+      ansible.builtin.copy:
+        src: "../target/release/dist-logger"
+        dest: "/root/"
+        mode: '755'
 
     - name: Copy topology
       ansible.builtin.copy:
         src: "topologies/{{ topology }}.json"
         dest: "/root/topology.json"
+
+    - name: Run dist-logger
+      ansible.builtin.command: /root/dist-logger
