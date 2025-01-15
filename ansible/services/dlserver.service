@@ -1,0 +1,15 @@
+[Unit]
+Description=dist-logger Server
+After=network.target
+
+[Service]
+ExecStart=/root/dl-server
+WorkingDirectory=/root/
+Restart=always
+User=root
+Group=root
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -15,7 +15,7 @@ fi
 # create node containers
 for i in {0..9}
 do
-    lxc launch $IMAGE n$i --project $LXC_PROJECT_NAME
+    lxc launch $IMAGE n$i --project $LXC_PROJECT_NAME --network lxdbr-dl
     lxc config set n$i boot.autostart false --project $LXC_PROJECT_NAME
     lxc snapshot n$i initial-state --project $LXC_PROJECT_NAME
 done

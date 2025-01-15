@@ -8,35 +8,41 @@
         src: "topologies/{{ topology }}.json"
         dest: "/root/topology.json"
       tags: always
-    - name: Deploy and run binaries (debug)
-      block:
-        - name: Copy executables (debug)
-          ansible.builtin.copy:
-            src: "../target/debug/dl-{{ item }}"
-            dest: /root/
-            mode: '0755'
-          loop:
-            - server
-            - client
-        - name: Run executables (debug)
-          ansible.builtin.command: "/root/dl-{{ item }}"
-          loop:
-            - server
-            - client
+    - name: Copy binaries (debug)
+      ansible.builtin.copy:
+        src: "../target/debug/dl-{{ item }}"
+        dest: /root/
+        mode: '0755'
+      loop:
+        - server
+        - client
       tags: debug
-    - name: Deploy and run binaries (release)
-      block:
-        - name: Copy executables (release)
-          ansible.builtin.copy:
-            src: "../target/release/dl-{{ item }}"
-            dest: /root/
-            mode: '0755'
-          loop:
-            - server
-            - client
-        - name: Run executables (release)
-          ansible.builtin.command: "/root/dl-{{ item }}"
-          loop:
-            - server
-            - client
+    - name: Copy binariess (release)
+      ansible.builtin.copy:
+        src: "../target/release/dl-{{ item }}"
+        dest: /root/
+        mode: '0755'
+      loop:
+        - server
+        - client
       tags: release
+    - name: Copy service files
+      ansible.builtin.copy:
+        src: "./services/dl{{ item }}.service"
+        dest: /etc/systemd/system/
+        mode: '0644'
+      loop:
+        - server
+        - client
+      tags: always
+    - name: Reload systemd daemon
+      ansible.builtin.command: systemctl daemon-reload
+    - name: Enable and stract services
+      ansible.builtin.systemd:
+        name: "dl{{ item }}.service"
+        enabled: yes
+        state: started
+      loop:
+        - server
+        - client
+      tags: always
