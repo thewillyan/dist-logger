@@ -1,16 +1,42 @@
 - name: Setup nodes
   hosts: all
+  vars:
+    topology: "fully_connected" # Provide a default value or ensure it's defined elsewhere
   tasks:
-    - name: Send dist-logger executable to nodes
-      ansible.builtin.copy:
-        src: "../target/release/dist-logger"
-        dest: "/root/"
-        mode: '755'
-
-    - name: Copy topology
+    - name: Copy topology JSON
       ansible.builtin.copy:
         src: "topologies/{{ topology }}.json"
         dest: "/root/topology.json"
-
-    - name: Run dist-logger
-      ansible.builtin.command: /root/dist-logger
+      tags: always
+    - name: Deploy and run binaries (debug)
+      block:
+        - name: Copy executables (debug)
+          ansible.builtin.copy:
+            src: "../target/debug/dl-{{ item }}"
+            dest: /root/
+            mode: '0755'
+          loop:
+            - server
+            - client
+        - name: Run executables (debug)
+          ansible.builtin.command: "/root/dl-{{ item }}"
+          loop:
+            - server
+            - client
+      tags: debug
+    - name: Deploy and run binaries (release)
+      block:
+        - name: Copy executables (release)
+          ansible.builtin.copy:
+            src: "../target/release/dl-{{ item }}"
+            dest: /root/
+            mode: '0755'
+          loop:
+            - server
+            - client
+        - name: Run executables (release)
+          ansible.builtin.command: "/root/dl-{{ item }}"
+          loop:
+            - server
+            - client
+      tags: release
