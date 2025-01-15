@@ -15,7 +15,7 @@ impl Logger {
 impl Logger {
     pub async fn log(&mut self, msg: &str) -> Result<(), std::io::Error> {
         let now = Local::now();
-        let log_msg = format!("[{}] {}", now.format("%d-%m-%Y %H:%M:%S"), msg);
+        let log_msg = format!("[{}] {}\n", now.format("%d-%m-%Y %H:%M:%S"), msg);
         self.log_sink.write_all(log_msg.as_bytes()).await?;
         Ok(())
     }
