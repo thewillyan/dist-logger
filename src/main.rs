@@ -80,7 +80,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let server = Server::builder().add_service(GreeterServer::new(greeter_service));
     let addr = format!("[::1]:{GRPC_PORT}").parse()?;
 
-    tokio::spawn(async move {
+    let server_handler = tokio::spawn(async move {
         server
             .serve_with_shutdown(addr, async { rx.recv().await.unwrap() })
             .await
@@ -123,5 +123,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         logger.log(&text).await?;
     }
 
+    server_handler.await?;
     Ok(())
 }
