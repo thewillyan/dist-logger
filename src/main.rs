@@ -5,7 +5,6 @@ use greet::{
 };
 use std::{
     collections::HashMap,
-    env,
     sync::{
         atomic::{AtomicUsize, Ordering},
         Arc,
@@ -54,7 +53,9 @@ const GRPC_PORT: u32 = 50051;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let hostname = env::var("HOSTNAME")?;
+    let hostname = hostname::get()?
+        .into_string()
+        .expect("Covert OsString to String.");
     let log_file = tokio::fs::File::create(format!("{PREFIX_PATH}/{hostname}.log")).await?;
     let mut logger = Logger::new(log_file);
 
