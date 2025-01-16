@@ -1,12 +1,12 @@
 [Unit]
 Description=dist-logger Client
-After=dlserver.service  # Ensures that the client starts after the server
-Requires=dlserver.service  # Ensures the client stops if the server stops
+After=dlserver.service
+Requires=dlserver.service
 
 [Service]
 ExecStart=/root/dl-client
 WorkingDirectory=/root/
-Restart=always
+Restart=on-failure
 User=root
 Group=root
 StandardOutput=journal
