@@ -34,7 +34,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     logger
-        .log(&format!("neighbors = {}.", neighbors.join(", ")))
+        .log(&format!("{hostname} neighbors = {}.", neighbors.join(", ")))
         .await?;
 
     // setup clients
