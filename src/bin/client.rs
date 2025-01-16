@@ -51,7 +51,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 match GreeterClient::connect(url.clone()).await {
                     Ok(grpc_client) => client = Some(grpc_client),
                     Err(err) => {
-                        eprintln!("Connection attempt {conn_attempts} failed: {err:?}");
+                        eprintln!("Connection attempt {conn_attempts} failed: {err}.");
                         sleep(retry_interval).await;
                     }
                 }
