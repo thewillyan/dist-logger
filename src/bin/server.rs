@@ -65,7 +65,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         service_budget: Arc::new(num_neighbors.into()),
         shutdown_signal: tx,
     };
-    let addr = format!("[::1]:{GRPC_PORT}").parse()?;
+    let addr = format!("[::0]:{GRPC_PORT}").parse()?;
 
     Server::builder()
         .add_service(GreeterServer::new(greeter_service))

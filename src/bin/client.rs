@@ -1,6 +1,9 @@
 use greet::{greeter_client::GreeterClient, GreetRequest};
 use std::collections::HashMap;
-use tokio::task::JoinSet;
+use tokio::{
+    task::JoinSet,
+    time::{sleep, Duration},
+};
 use tonic::Request;
 
 use dist_logger::log::Logger;
@@ -35,25 +38,35 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await?;
 
     // setup clients
+    let max_conn_attempts = 20;
+    let retry_interval = Duration::from_millis(100);
     let mut connections = JoinSet::new();
     for n in neighbors.clone() {
         connections.spawn(async move {
             let url = format!("http://{n}.lxd:{GRPC_PORT}");
-            let client = GreeterClient::connect(url)
-                .await
-                .unwrap_or_else(|err| panic!("Failed to connect to client {n}: {err:?}."));
+            let mut client = None;
+            let mut conn_attempts: u32 = 0;
+            while client.is_none() && conn_attempts < max_conn_attempts {
+                conn_attempts += 1;
+                match GreeterClient::connect(url.clone()).await {
+                    Ok(grpc_client) => client = Some(grpc_client),
+                    Err(err) => {
+                        eprintln!("Connection attempt {conn_attempts} failed: {err:?}");
+                        sleep(retry_interval).await;
+                    }
+                }
+            }
+            let client = client.unwrap_or_else(|| {
+                panic!("Max connection attempts reached. Failed to connect to server on node {n}.")
+            });
             (n, client)
         });
     }
 
-    let mut client_map = HashMap::with_capacity(neighbors.len());
-    for (n, client) in connections.join_all().await {
-        client_map.insert(n, client);
-    }
-
-    // Send greeting requests
+    // send greeting requests
     let mut requests = JoinSet::new();
-    for (n, mut client) in client_map.clone().into_iter() {
+    while let Some(connection) = connections.join_next().await {
+        let (n, mut client) = connection?;
         let src = hostname.clone();
         requests.spawn(async move {
             let request = Request::new(GreetRequest {
