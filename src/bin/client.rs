@@ -38,7 +38,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut connections = JoinSet::new();
     for n in neighbors.clone() {
         connections.spawn(async move {
-            let url = format!("http://{n}:{GRPC_PORT}");
+            let url = format!("http://{n}.lxd:{GRPC_PORT}");
             let client = GreeterClient::connect(url)
                 .await
                 .unwrap_or_else(|err| panic!("Failed to connect to client {n}: {err}."));
