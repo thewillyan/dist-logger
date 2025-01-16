@@ -41,7 +41,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let url = format!("http://{n}.lxd:{GRPC_PORT}");
             let client = GreeterClient::connect(url)
                 .await
-                .unwrap_or_else(|err| panic!("Failed to connect to client {n}: {err}."));
+                .unwrap_or_else(|err| panic!("Failed to connect to client {n}: {err:?}."));
             (n, client)
         });
     }
