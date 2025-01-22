@@ -7,5 +7,5 @@ do
     node="n$i"
     log="/root/$node.log"
 
-    lxc exec "$node" --project "$LXC_PROJECT_NAME" -- bash -c "wc -l $log && cat $log"
+    incus exec "$node" --project "$INCUS_PROJECT_NAME" -- bash -c "wc -l $log && cat $log"
 done

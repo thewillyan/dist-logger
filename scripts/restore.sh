@@ -6,5 +6,5 @@ source env.sh
 for i in {0..9}
 do
     echo "Restoring n$i"
-    lxc restore n$i initial-state --project $LXC_PROJECT_NAME
+    incus snapshot restore n$i initial-state --project $INCUS_PROJECT_NAME
 done

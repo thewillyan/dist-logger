@@ -6,5 +6,5 @@ source env.sh
 for i in {0..9}
 do
     echo "Deleting n$i"
-    lxc delete n$i -f --project $LXC_PROJECT_NAME
+    incus delete n$i -f --project $INCUS_PROJECT_NAME
 done

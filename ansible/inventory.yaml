@@ -1,13 +1,13 @@
 all:
   vars:
-    ansible_connection: lxd
+    ansible_connection: community.general.incus
     ansible_user: root
     ansible_become: no
   children:
     local:
       vars:
-        ansible_lxd_remote: local
-        ansible_lxd_project: dist-logger
+        ansible_incus_remote: local
+        ansible_incus_project: dist-logger
       hosts:
         n0:
         n1:

@@ -43,7 +43,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut connections = JoinSet::new();
     for n in neighbors.clone() {
         connections.spawn(async move {
-            let url = format!("http://{n}.lxd:{GRPC_PORT}");
+            let url = format!("http://{n}.incus:{GRPC_PORT}");
             let mut client = None;
             let mut conn_attempts: u32 = 0;
             while client.is_none() && conn_attempts < max_conn_attempts {
